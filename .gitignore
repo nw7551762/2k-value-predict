@@ -5,6 +5,7 @@ venv/
 # 忽略 Python 编译生成的文件
 __pycache__/
 *.py[cod]
+.python-version
 
 # 忽略某些编辑器的设置文件
 .vscode/
