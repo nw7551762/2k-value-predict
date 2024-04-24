@@ -22,17 +22,22 @@ player_values = fetch_player_values(2023)
 
 #刪除當年度季中轉隊球員重複資料
 player_stats['filter_1'] = player_stats.groupby(['Player', 'year'])['Rk'].transform('count')
-player_stats_2024['filter_1'] = player_stats.groupby(['Player', 'year'])['Rk'].transform('count')
+player_stats_2024['filter_1'] = player_stats_2024.groupby(['Player', 'year'])['Rk'].transform('count')
 #移除nba中重複的欄位名稱，如：Rk、AST、TM
 player_stats=player_stats[((player_stats.Age != 'Age') & ((player_stats.filter_1==1) | (player_stats.Tm=='TOT')))]
-player_stats_2024=player_stats_2024[((player_stats.Age != 'Age') & ((player_stats.filter_1==1) | (player_stats.Tm=='TOT')))]
+player_stats_2024 = player_stats_2024[((player_stats_2024.Age != 'Age') & ((player_stats_2024.filter_1 == 1) | (player_stats_2024.Tm == 'TOT')))]
 # 檢查空值
 nan_columns_list = player_stats.columns[player_stats.isna().any()].tolist()
 print(nan_columns_list)
+nan_columns_list_2024 = player_stats.columns[player_stats_2024.isna().any()].tolist()
+print('#'*20)
+print(nan_columns_list_2024)
 
 # 填充空值數據
-player_stats['3P%'] = player_stats['3P%'].fillna(0)
-player_stats_2024['3P%'] = player_stats_2024['3P%'].fillna(0)
+for col in nan_columns_list:
+    player_stats[col] = player_stats[col].fillna(0)
+for col in nan_columns_list_2024:
+    player_stats_2024[col] = player_stats_2024[col].fillna(0)
 
 # 轉換str為float
 for idx in ['G', 'GS', 'MP', 'FG', 'FGA', 'FG%', '3P', '3PA', '3P%', '2P', '2PA', '2P%', 'eFG%', 'FT', 'FTA', 'FT%', 'ORB', 'DRB', 'TRB', 'AST', 'STL', 'BLK', 'TOV', 'PF', 'PTS', 'year']:
@@ -41,7 +46,7 @@ for idx in ['G', 'GS', 'MP', 'FG', 'FGA', 'FG%', '3P', '3PA', '3P%', '2P', '2PA'
 
 # 篩除出賽數不足15場的球員
 player_stats=player_stats[(player_stats.G>=15) ]
-player_stats_2024=player_stats_2024[(player_stats.G>=15) ]
+player_stats_2024=player_stats_2024[(player_stats_2024.G>=15) ]
 # 重設index
 player_stats=player_stats.reset_index(drop=True)
 player_stats_2024=player_stats_2024.reset_index(drop=True)
@@ -130,7 +135,7 @@ for col in columns_to_log_transform:
         player_numeric_stats[ 'log_'+ col]  = np.log(player_numeric_stats[col])
 
 
-    # 計算原始数据和對數轉換後數據 '2K_Value' 的相關係數
+    # 計算原始數據和對數轉換後數據 '2K_Value' 的相關係數
     correlation_ori = player_numeric_stats[col].corr(player_numeric_stats['2K_Value'])
     correlation_log = player_numeric_stats['log_'+col].corr(player_numeric_stats['2K_Value'])
     if correlation_ori<correlation_log:
@@ -162,7 +167,7 @@ y = player_numeric_stats['2K_Value']  # 目標變量
 
 # 劃分訓練集 測試集
 x_train, x_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
-# 打印结果确认
+# 结果確認
 if len(X) > 1:
     x_train, x_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
     print("Training set dimensions:", x_train.shape)
@@ -271,27 +276,22 @@ blending_output=pd.DataFrame({'weight':weight,
 # print top 10 weight value
 print (blending_output.sort_values(by=['test_mse'],ascending=True).head(10))
 
-# # predict and blending
-# # 使用VotingRegressor进行预测
-# final_pred_voting_2024 = vote.predict(player_stats_2024_scaled)
-# # 使用StackingRegressor进行预测
-# final_pred_stacking_2024 = stack_mod.predict(player_stats_2024_scaled)
-# final_pred_blending=0.94*final_pred_voting+0.06*final_pred_stacking
-# # reverse log y
-# final_pred_blending=np.expm1(final_pred_blending)
+# predict and blending
+# 使用VotingRegressor進行預測
+final_pred_voting_2024 = vote.predict(player_stats_2024_scaled)
+# 使用StackingRegressor進行預測
+final_pred_stacking_2024 = stack_mod.predict(player_stats_2024_scaled)
 
+# 混合这兩種預測的方式，这里使用之前找到的最佳混合權重
+final_pred_blending_2024 = 0.42 * final_pred_voting_2024 + 0.58 * final_pred_stacking_2024
 
-# # 混合这两种预测的方式，这里使用之前找到的最佳混合权重
-# final_pred_blending_2024 = 0.94 * final_pred_voting_2024 + 0.06 * final_pred_stacking_2024
+# 原始目標變量需要反轉換
+final_pred_blending_2024 = np.expm1(final_pred_blending_2024)
 
-# # 如果原始目标变量进行了对数转换，需要逆转换
-# final_pred_blending_2024 = np.expm1(final_pred_blending_2024)
+# 創建或提交的DataFrame
+predictions_2024 = pd.DataFrame({
+    'Player': player_stats_2024['Player'],
+    'Predicted_2K_Value_2024': final_pred_blending_2024
+})
 
-# # 创建提交或检查的DataFrame
-# predictions_2024 = pd.DataFrame({
-#     'Player': player_stats_2024['Player'],
-#     'Predicted_2K_Value_2024': final_pred_blending_2024
-# })
-
-# # 显示或保存结果
-# print(predictions_2024.head())
+print(predictions_2024.head())
