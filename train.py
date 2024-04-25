@@ -13,6 +13,7 @@ from sklearn.linear_model import ElasticNetCV
 from sklearn.ensemble import VotingRegressor
 from mlxtend.regressor import StackingRegressor
 from sklearn.ensemble import GradientBoostingRegressor
+from joblib import dump, load
 
 
 
@@ -26,6 +27,9 @@ player_stats_2024['filter_1'] = player_stats_2024.groupby(['Player', 'year'])['R
 #移除nba中重複的欄位名稱，如：Rk、AST、TM
 player_stats=player_stats[((player_stats.Age != 'Age') & ((player_stats.filter_1==1) | (player_stats.Tm=='TOT')))]
 player_stats_2024 = player_stats_2024[((player_stats_2024.Age != 'Age') & ((player_stats_2024.filter_1 == 1) | (player_stats_2024.Tm == 'TOT')))]
+# 删除 filter_1 列
+player_stats = player_stats.drop('filter_1', axis=1)
+player_stats_2024 = player_stats_2024.drop('filter_1', axis=1)
 # 檢查空值
 nan_columns_list = player_stats.columns[player_stats.isna().any()].tolist()
 print(nan_columns_list)
@@ -70,7 +74,7 @@ player_stats = pd.merge(player_stats, player_values_df, on='Player', how='left')
 player_stats = player_stats.dropna(subset=['2K_Value'])
 # Ensure '2K_Value' is numeric
 player_stats['2K_Value'] = pd.to_numeric(player_stats['2K_Value'], errors='coerce')
-
+print('####'*10+' player_stats '+'####'*10)
 print(player_stats)
 
 # 設定畫布大小，依據數字型欄位的數量來調整
@@ -115,10 +119,11 @@ print(player_stats)
     
 #     plt.show()
 
-# 定義需要考慮的列
-columns_to_log_transform = ['FG', 'FGA', 'FG%', '3P', '3PA', '3P%', '2P', '2PA',
+# 定義需要對數轉換的列
+columns_to_transform = ['FG', 'FGA', 'FG%', '3P', '3PA', '3P%', '2P', '2PA',
                        '2P%', 'eFG%', 'FT', 'FTA', 'FT%', 'ORB', 'DRB', 'TRB', 'AST', 'STL',
                        'BLK', 'TOV', 'PF', 'PTS']
+columns_to_log_transform =[]
 
 
 # Select only numeric columns again to include '2K_Value'
@@ -127,7 +132,8 @@ player_numeric_stats_2024 = player_stats_2024.select_dtypes(include=[np.number])
 # print(numeric_stats.columns)
 
 # 進行對數轉換，處理零或負值
-for col in columns_to_log_transform:
+player_numeric_stats['2K_Value'] = np.log1p(player_numeric_stats['2K_Value'])
+for col in columns_to_transform:
     # 檢查並處理小於等於零的值
     if any(player_numeric_stats[col] <= 0):
         player_numeric_stats['log_'+ col] = np.log(player_numeric_stats[col] + 1)  # 加1以避免log(0)和log(負數)
@@ -139,11 +145,19 @@ for col in columns_to_log_transform:
     correlation_ori = player_numeric_stats[col].corr(player_numeric_stats['2K_Value'])
     correlation_log = player_numeric_stats['log_'+col].corr(player_numeric_stats['2K_Value'])
     if correlation_ori<correlation_log:
+        columns_to_log_transform.append(col)
+        # 對數轉換後相關係數更高，則保留轉換後的數據
         player_numeric_stats[col] = player_numeric_stats['log_'+col]
         print(f'col: {col}')
         print(f'correlation_ori: {correlation_ori}')
         print(f'correlation_log: {correlation_log}')
+        # 轉換測試資料
+        if any(player_numeric_stats_2024[col] <= 0):
+            player_numeric_stats_2024[col] = np.log(player_numeric_stats_2024[col] + 1)  # 加1以避免log(0)和log(負數)
+        else:
+            player_numeric_stats_2024[col]  = np.log(player_numeric_stats_2024[col])
     player_numeric_stats.drop('log_' + col, axis=1, inplace=True)
+print(f'columns_to_log_transform {columns_to_log_transform}')
 
 
 # Compute the correlation matrix with '2K_Value'
@@ -294,4 +308,10 @@ predictions_2024 = pd.DataFrame({
     'Predicted_2K_Value_2024': final_pred_blending_2024
 })
 
-print(predictions_2024.head())
+print(final_pred_voting_2024.to_string())
+
+
+
+# 保存模型
+dump(vote, './model/voting_regressor.joblib')
+dump(stack_mod, './model/stacking_regressor.joblib')
