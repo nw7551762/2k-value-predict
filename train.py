@@ -17,6 +17,7 @@ from joblib import dump, load
 import os
 from dotenv import load_dotenv, set_key
 import unicodedata
+from weight.weight import calculate_weights,calculate_weights_custom
 
 dotenv_path = '.env'
 load_dotenv(dotenv_path)
@@ -59,8 +60,8 @@ for idx in ['G', 'GS', 'MP', 'FG', 'FGA', 'FG%', '3P', '3PA', '3P%', '2P', '2PA'
 print('####'*10+' 篩選之前 player_stats '+'####'*10)
 print(player_stats)
 # 篩除出賽數不足15場的球員且FG>1.8的球員
-player_stats = player_stats[(player_stats.G >= 15) & (player_stats['FG'] > 1.8)]
-player_stats_test = player_stats_test[(player_stats_test.G >= 15) & (player_stats_test['FG'] > 1.8)]
+player_stats = player_stats[(player_stats.G >= 15) & (player_stats['FG'] > 2.6)]
+player_stats_test = player_stats_test[(player_stats_test.G >= 15) & (player_stats_test['FG'] > 2.6)]
 
 
 # 重設index
@@ -196,7 +197,6 @@ correlation_with_2k = player_numeric_stats.corr()['2K_Value'].sort_values(ascend
 print('####'*10+' correlation_with_2k '+'####'*10)
 print(correlation_with_2k)
 
-
 # Convert to DataFrame for better visualization
 correlation_df = pd.DataFrame(correlation_with_2k).transpose()
 
@@ -211,6 +211,15 @@ plt.tick_params(axis='x', labelsize=8)  # 調整x軸標籤的字體大小
 plt.tick_params(axis='y', labelsize=8)  # 調整y軸標籤的字體大小
 plt.show()
 
+
+# 篩選相關係數高於0.3的欄位
+high_corr_cols = correlation_with_2k[correlation_with_2k.abs() > 0.2].index.tolist()
+print('#'*10 + ' high_corr_cols ' +'#'*10)
+print(high_corr_cols)
+player_numeric_stats = player_numeric_stats[high_corr_cols]
+if '2K_Value' in high_corr_cols:
+    high_corr_cols.remove('2K_Value')
+test_numeric_stats = test_numeric_stats[high_corr_cols]
 
 # 定義特徵 目標變量
 X = player_numeric_stats.drop('2K_Value', axis=1)  # 特徵是除了 '2K_Value' 的其他列
@@ -234,12 +243,15 @@ x_train_scaled = scaler.fit_transform(x_train)
 x_test_scaled = scaler.transform(x_test)
 test_data_scaled = scaler.transform(test_numeric_stats)
 
+# 使用自訂權重函数
+sample_weights = calculate_weights_custom(y_train)
+
 
 # set cross-validation alpha
 alpha=[0.0001,0.001,0.01,0.1,1,10,100]
 # find the best alpha and build model
 Ridge = RidgeCV(cv=5, alphas=alpha)
-Ridge_fit = Ridge.fit(x_train_scaled, y_train)
+Ridge_fit = Ridge.fit(x_train_scaled, y_train,sample_weight=sample_weights)
 y_ridge_train = Ridge_fit.predict(x_train_scaled)
 y_ridge_test = Ridge_fit.predict(x_test_scaled)
 # validation( train data and validate data)
@@ -252,7 +264,7 @@ print('RMSE_test_Ridge = ' + str(math.sqrt(sklm.mean_squared_error(y_test, y_rid
 alpha=[0.0001,0.001,0.01,0.1,1,10,100]
 # find the best alpha and build model
 Lasso = LassoCV(cv=5, alphas=alpha)
-Lasso_fit=Lasso.fit(x_train,y_train)
+Lasso_fit=Lasso.fit(x_train,y_train,sample_weight=sample_weights)
 y_lasso_train=Lasso_fit.predict(x_train)
 y_lasso_test=Lasso_fit.predict(x_test)
 # validation( train data and validate data)
@@ -265,7 +277,7 @@ alpha=[0.0001,0.001,0.01,0.1,1,10,100]
 l1ratio = [0.1, 0.5, 0.9, 0.95, 0.99, 1]
 # find the best alpha/l1ratio and build model
 elastic_cv = ElasticNetCV(cv=5, max_iter=10000000, alphas=alpha,  l1_ratio=l1ratio)
-elastic_fit = elastic_cv.fit(x_train_scaled, y_train)
+elastic_fit = elastic_cv.fit(x_train_scaled, y_train,sample_weight=sample_weights)
 y_el_train=elastic_fit.predict(x_train_scaled)
 y_el_test=elastic_fit.predict(x_test_scaled)
 # validation( train data and validate data)
@@ -283,7 +295,7 @@ vote_mod = VotingRegressor([
 ])
 
 # Fit model
-vote = vote_mod.fit(x_train_scaled, y_train.ravel())
+vote = vote_mod.fit(x_train_scaled, y_train.ravel(),sample_weight=sample_weights)
 
 # Predict train/test y
 vote_pred_train = vote.predict(x_train_scaled)
@@ -306,7 +318,7 @@ stregr = StackingRegressor(regressors=[Ridge_fit, Lasso_fit, elastic_fit],
                            use_features_in_secondary=True)
 
 # 重新訓練模型
-stack_mod = stregr.fit(x_train_scaled, y_train.ravel())
+stack_mod = stregr.fit(x_train_scaled, y_train.ravel(),sample_weight=sample_weights)
 stacking_pred_train = stack_mod.predict(x_train_scaled)
 stacking_pred_test = stack_mod.predict(x_test_scaled)
 
