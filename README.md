@@ -14,7 +14,8 @@
 
 ## 數據來源
 ### NBA 2K 值
-利用 Python `requests` 和 `BeautifulSoup` 模組從 [Hoopshype](https://hoopshype.com/nba2k/) 網站抓取 NBA 球員的 2K 數值。這些數據每年更新，提供球員的估值，是預測模型的關鍵輸入之一。
+利用 Python `requests` 和 `BeautifulSoup` 模組從 [Hoopshype](https://hoopshype.com/nba2k/) 網站抓取 NBA 球員的 2K 數值。
+
 
 ### NBA 球員統計
 利用 Python `requests` 和 `BeautifulSoup` 模組從 [Basketball Reference](https://www.basketball-reference.com/) 網站的每年賽季統計頁面抓取 NBA 球員的總體表現數據。例如，使用 URL `https://www.basketball-reference.com/leagues/NBA_2023_totals.html` 可獲取 2023 年的數據。
@@ -46,6 +47,11 @@
 
 
 
+## 預測分析
 
+![comparisn_od_actual_vs_predictd_2k_value](https://github.com/nw7551762/2k-value-predict/assets/118497430/3617d4ff-0659-415f-9c07-2f63bebd0c0c)
 
-![Logo](images/logo.png)
+### 低分段球員預測偏高
+在低分段球員的預測中，模型傾向於預測出較實際分數更高的值。這種偏差可能是因為模型在學習過程中給予高分段球員的數據更高的權重，導致模型在預測低分段球員時過度泛化其特徵。
+### 高分段球員預測偏低
+對於高分段球員，模型則常常預測出比實際分數低的結果。這表明在高分段的數據上模型可能已達到了一種過擬合的狀態，對於這些球員的特定特徵過度敏感。
