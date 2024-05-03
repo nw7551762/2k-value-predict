@@ -15,7 +15,7 @@
 ## 數據來源
 ### NBA 2K 值
 利用 Python `requests` 和 `BeautifulSoup` 模組從 [Hoopshype](https://hoopshype.com/nba2k/) 網站抓取 NBA 球員的 2K 數值。
-
+使用2023年球員數據作為模型訓練的基礎，來模擬球員在2024的遊戲評分。
 
 ### NBA 球員統計
 利用 Python `requests` 和 `BeautifulSoup` 模組從 [Basketball Reference](https://www.basketball-reference.com/) 網站的每年賽季統計頁面抓取 NBA 球員的總體表現數據。例如，使用 URL `https://www.basketball-reference.com/leagues/NBA_2023_totals.html` 可獲取 2023 年的數據。
@@ -48,7 +48,7 @@
 
 
 ## 預測分析
-
+2024 年球員預測分數與實際 2k 分數散布圖
 ![comparisn_od_actual_vs_predictd_2k_value](https://github.com/nw7551762/2k-value-predict/assets/118497430/3617d4ff-0659-415f-9c07-2f63bebd0c0c)
 
 ### 低分段球員預測偏高
