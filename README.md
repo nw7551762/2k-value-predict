@@ -13,8 +13,11 @@
 - **可視化**：生成熱圖和散點圖，可視化相關性和預測結果。
 
 ## 數據來源
+### NBA 2K 值
+利用 Python `requests` 和 `BeautifulSoup` 模組從 [Hoopshype](https://hoopshype.com/nba2k/) 網站抓取 NBA 球員的 2K 數值。這些數據每年更新，提供球員的估值，是預測模型的關鍵輸入之一。
 
-數據來自 `scrawl` 函式庫的功能，包括 `fetch_nba_player_stats`、`fetch_player_values` 和 `get_stats`，涵蓋了 2023 年和 2024 年的數據。
+### NBA 球員統計
+利用 Python `requests` 和 `BeautifulSoup` 模組從 [Basketball Reference](https://www.basketball-reference.com/) 網站的每年賽季統計頁面抓取 NBA 球員的總體表現數據。例如，使用 URL `https://www.basketball-reference.com/leagues/NBA_2023_totals.html` 可獲取 2023 年的數據。
 
 ## 關鍵庫
 
@@ -26,12 +29,23 @@
 
 ## 模型建構過程
 
-1. **數據準備**：將球員統計數據與相應的 2K 值合併，並通過移除重複和處理缺失值來清理數據集。
-2. **特徵工程**：對特徵進行對數轉換，當它提高與目標變量 `2K_Value` 的相關性時。
-3. **模型訓練**：訓練多個回歸模型和最終的組合模型，使用交叉驗證來找出最優參數。
-4. **模型評估**：將預測值與實際值進行比較，計算 RMSE，並可視化結果以評估模型的預測準確性。
-5. **模型部署**：使用 Joblib 保存表現最佳的模型，以便未來進行預測。
+### 數據摘要
+數據集包含 369 筆條目，每個條目包含 32 個與球員表現相關的特徵。
+樣本數據:
+      Rk                    Player Pos Age   Tm     G    GS    MP   FG   FGA  ...  DRB   TRB   AST  STL  BLK  TOV   PF   PTS    year  2K_Value
+0      1          Precious Achiuwa   C  23  TOR  55.0  12.0  20.7  3.6   7.3  ...  4.1   6.0   0.9  0.6  0.5  1.1  1.9   9.2  2023.0        76
+1      2              Steven Adams   C  29  MEM  42.0  42.0  27.0  3.7   6.3  ...  6.5  11.5   2.3  0.9  1.1  1.9  2.3   8.6  2023.0        82
+2      3               Bam Adebayo   C  25  MIA  75.0  75.0  34.6  8.0  14.9  ...  6.7   9.2   3.2  1.2  0.8  2.5  2.8  20.4  2023.0        87
 
-## 結果
+## 相關性分析
+![correlation_heatmap_of_stats_with_2k_values](https://github.com/nw7551762/2k-value-predict/assets/118497430/b4262d8d-f3c0-4457-9217-c0f2a960f557)
 
-組合模型（Voting 和 Stacking）展示了改善的預測準確性，通過混合這些模型進一步優化了預測。最終模型的預測與 NBA 球員的實際 2K 值進行了比較，證明了
+
+
+
+
+
+
+
+
+![Logo](images/logo.png)
