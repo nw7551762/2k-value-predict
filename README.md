@@ -52,23 +52,25 @@
 ![comparisn_od_actual_vs_predictd_2k_value](https://github.com/nw7551762/2k-value-predict/assets/118497430/3617d4ff-0659-415f-9c07-2f63bebd0c0c)
 
 截至 2024 年 5 月 6 號實際 2K 分數 90 分以上球員預測數據:
-                  Player  Actual_2K_Value  Predicted_2K_Value  Difference   
-            Nikola Jokic               98           96.188489   -1.811511
-             Joel Embiid               96           96.640695    0.640695
-   Giannis Antetokounmpo               96           96.365043    0.365043
-            LeBron James               96           95.568045   -0.431955
-            Kevin Durant               96           92.580398   -3.419602
-             Luka Doncic               95           97.535999    2.535999
-            Jimmy Butler               95           89.804507   -5.195493
-            Jayson Tatum               95           92.303765   -2.696235
-          Damian Lillard               94           89.432404   -4.567596
-           Kawhi Leonard               94           91.490098   -2.509902
-            Devin Booker               94           91.235675   -2.764325
-           Anthony Davis               93           93.849111    0.849111
- Shai Gilgeous-Alexander               93           94.130990    1.130990
-        Donovan Mitchell               92           91.086434   -0.913566
-            Kyrie Irving               90           90.765717    0.765717
-         Zion Williamson               90           88.540953   -1.459047
+|                Player       | Actual_2K_Value | Predicted_2K_Value  | Difference   |
+|-----------------------------|-----------------|---------------------|--------------|
+| Nikola Jokic                | 98              | 96.188489           | -1.811511    |
+| Joel Embiid                 | 96              | 96.640695           | 0.640695     |
+| Giannis Antetokounmpo       | 96              | 96.365043           | 0.365043     |
+| LeBron James                | 96              | 95.568045           | -0.431955    |
+| Kevin Durant                | 96              | 92.580398           | -3.419602    |
+| Luka Doncic                 | 95              | 97.535999           | 2.535999     |
+| Jimmy Butler                | 95              | 89.804507           | -5.195493    |
+| Jayson Tatum                | 95              | 92.303765           | -2.696235    |
+| Damian Lillard              | 94              | 89.432404           | -4.567596    |
+| Kawhi Leonard               | 94              | 91.490098           | -2.509902    |
+| Devin Booker                | 94              | 91.235675           | -2.764325    |
+| Anthony Davis               | 93              | 93.849111           | 0.849111     |
+| Shai Gilgeous-Alexander     | 93              | 94.130990           | 1.130990     |
+| Donovan Mitchell            | 92              | 91.086434           | -0.913566    |
+| Kyrie Irving                | 90              | 90.765717           | 0.765717     |
+| Zion Williamson             | 90              | 88.540953           | -1.459047    |
+
 
             
 ### 低分段球員預測偏高
